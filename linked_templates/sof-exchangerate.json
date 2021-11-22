@@ -1,0 +1,102 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "appinsights_resourceName": {
+      "type": "string"
+    },
+    "appserviceplan_resourceName": {
+      "type": "string"
+    },
+    "service_resourceName": {
+      "type": "string"
+    },
+    "service_appSettings": {
+      "type": "array",
+      "defaultValue": []
+    }
+  },
+  "variables": {
+    "template_applicaitoninsights_url": "",
+    "template_serviceplan_windows_url": "",
+    "template_service_url": ""
+  },
+  "resources": [
+    {
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2016-09-01",
+      "name": "linked_applicaitoninsights_template",
+      "properties": {
+        "mode": "Incremental",
+        "templateLink": {
+          "uri": "[variables('template_applicaitoninsights_url')]",
+          "contentVersion": "1.0.0.0"
+        },
+        "parameters": {
+          "resourceName": {
+            "value": "[parameters('appinsights_resourceName')]"
+          }
+        }
+      }
+    },
+    {
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2016-09-01",
+      "name": "linked_servcieplan",
+      "dependsOn": [
+        "[resourceId('Microsoft.Resources/deployments','linked_applicaitoninsights_template')]"
+      ],
+      "properties": {
+        "mode": "Incremental",
+        "templateLink": {
+          "uri": "[variables('template_serviceplan_windows_url')]",
+          "contentVersion": "1.0.0.0"
+        },
+        "parameters": {
+          "resourceName": {
+            "value": "[parameters('appserviceplan_resourceName')]"
+          }
+        }
+      }
+    },
+    {
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2016-09-01",
+      "name": "linked_service",
+      "dependsOn": [
+        "[resourceId('Microsoft.Resources/deployments','linked_servcieplan')]"
+      ],
+      "properties": {
+        "mode": "Incremental",
+        "templateLink": {
+          "uri": "[variables('template_service_url')]",
+          "contentVersion": "1.0.0.0"
+        },
+        "parameters": {
+          "resourceName": {
+            "value": "[parameters('service_resourceName')]"
+          },
+          "applicationInsightsKey": {
+            "value": "[reference('linked_applicaitoninsights_template').outputs.MyAppInsightsInstrumentationKey.value]"
+          },
+          "planId": {
+            "value": "[reference('linked_servcieplan').outputs.resourceId.value]"
+          },
+          "appSettings": {
+            "value": "[parameters('service_appSettings')]"
+          }
+        }
+      }
+    }
+  ],
+  "outputs": {
+    "applicationInsightsKey": {
+      "type": "string",
+      "value": "[reference('linked_applicaitoninsights_template').outputs.appInsightsInstrumentationKey.value]"
+    },
+    "planId": {
+      "type": "string",
+      "value": "[reference('linked_servcieplan').outputs.resourceId.value]"
+    }
+  }
+}

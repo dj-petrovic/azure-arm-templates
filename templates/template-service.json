@@ -1,0 +1,297 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "resourceName": { "type": "string" },
+    "applicationInsightsKey": { "type": "string" },
+    "environmentStage": {
+      "type": "string",
+      "defaultValue": "DIT",
+      "allowedValues": [
+        "LAB",
+        "DIT",
+        "SIT",
+        "UAT",
+        "PRO"
+      ]
+    },
+    "appSettings": {
+      "type": "array",
+      "defaultValue": []
+    },
+    "connectionStrings": {
+      "type": "array",
+      "defaultValue": []
+    },
+    "planId": { "type": "string" },
+    "enableSoftDelete": {
+      "type": "bool",
+      "defaultValue": false,
+      "allowedValues": [
+        true,
+        false
+      ]
+    }
+  },
+  "variables": {
+    "prefix": "[replace(resourceGroup().name,'sof-', '')]",
+    "instanceName": "[concat(variables('prefix'),'-',parameters('resourceName'),'-api')]",
+    "instanceShortName": "[toLower(replace(variables('instanceName'),'-',''))]",
+    "baseAppSettings": [
+      {
+        "name": "ASPNETCORE_ENVIRONMENT",
+        "value": "[parameters('environmentStage')]"
+      },
+      {
+        "name": "APPINSIGHTS_INSTRUMENTATIONKEY",
+        "value": "[parameters('applicationInsightsKey')]"
+      }     
+    ],
+    "storageAccountName": "[concat(replace(variables('prefix'),'-', ''),parameters('resourceName'),'sa')]",
+    "applicationLogsContainerName": "applicationlogs",
+    "webserverLogsContainerName": "webserverlogs",
+    "listAccountSasRequestContent": {
+      "signedServices": "bfqt",
+      "signedPermission": "rwdlacup",
+      "signedStart": "2015-01-01T00:00:00Z",
+      "signedExpiry": "2100-01-01T00:00:00Z",
+      "signedResourceTypes": "sco"
+    },
+      "accessRestrictionRules": [
+    
+    ]
+  },
+  "resources": [
+    {
+      "name": "[variables('storageAccountName')]",
+      "type": "Microsoft.Storage/storageAccounts",
+      "sku": {
+        "name": "Standard_LRS", // Standard_LRS | Standard_GRS | Standard_ZRS | Premium_LRS
+        "tier": "Standard"
+      },
+      "kind": "Storage",
+      "apiVersion": "2018-02-01",
+      "location": "[resourceGroup().location]",
+      "tags": {},
+      "scale": null,
+      "properties": {
+        "networkAcls": {
+          "bypass": "AzureServices",
+          "virtualNetworkRules": [],
+          "ipRules": [],
+          "defaultAction": "Allow"
+        },
+        "supportsHttpsTrafficOnly": true,
+        "encryption": {
+          "services": {
+            "file": {
+              "enabled": true
+            },
+            "blob": {
+              "enabled": true
+            }
+          },
+          "keySource": "Microsoft.Storage"
+        }
+      },
+      "dependsOn": [
+
+      ]
+    },
+    {
+      "name": "[concat(variables('storageAccountName'), '/default')]",
+      "type": "Microsoft.Storage/storageAccounts/blobServices",
+      "apiVersion": "2018-07-01",
+      "properties": {
+        "deleteRetentionPolicy": {
+          "enabled": "[parameters('enableSoftDelete')]",
+          "days": 7
+        }
+      },
+      "dependsOn": [
+        "[concat('Microsoft.Storage/storageAccounts/', variables('storageAccountName'))]"
+      ]
+    },
+    {
+      "name": "[concat(variables('storageAccountName'), '/default/', variables('applicationLogsContainerName'))]",
+      "type": "Microsoft.Storage/storageAccounts/blobServices/containers",
+      "apiVersion": "2018-07-01",
+      "dependsOn": [
+        "[concat('Microsoft.Storage/storageAccounts/', variables('storageAccountName'))]"
+      ],
+      "properties": {
+        "publicAccess": "None" //None (private container), Container (the whole container is publically accessible), Blob (only Blobs are publically accessible)
+      }
+    },
+    {
+      "name": "[concat(variables('storageAccountName'), '/default/', variables('webserverLogsContainerName'))]",
+      "type": "Microsoft.Storage/storageAccounts/blobServices/containers",
+      "apiVersion": "2018-07-01",
+      "dependsOn": [
+        "[concat('Microsoft.Storage/storageAccounts/', variables('storageAccountName'))]"
+      ],
+      "properties": {
+        "publicAccess": "None" //None (private container), Container (the whole container is publically accessible), Blob (only Blobs are publically accessible)
+      }
+    },
+    {
+      "type": "Microsoft.Web/sites",
+      "name": "[variables('instanceName')]",
+      "apiVersion": "2018-11-01",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "enabled": true,
+        "serverFarmId": "[parameters('planId')]",
+        "name": "[variables('instanceName')]",
+        "reserved": false,
+        "isXenon": false,
+        "hyperV": false,
+        "scmSiteAlsoStopped": false,
+        "clientAffinityEnabled": true,
+        "clientCertEnabled": false,
+        "hostNamesDisabled": false,
+        "containerSize": 0,
+        "dailyMemoryTimeQuota": 0,
+        "httpsOnly": true,
+        "redundancyMode": "None",
+        "siteConfig": {
+          "appSettings": "[union(variables('baseAppSettings'), parameters('appSettings'), array(json(concat('{\"name\": \"TableStorageConnectionString\", \"value\": \"', 'DefaultEndpointsProtocol=https;AccountName=', variables('storageAccountName'), ';AccountKey=', listKeys(variables('storageAccountName'),'2015-05-01-preview').key1, '\"}'))))]",
+          "connectionStrings": "[parameters('connectionStrings')]"
+        }
+      },
+      "resources": [
+     
+      ],
+      "dependsOn": [
+        "[resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName'))]"
+      ]
+    },
+    {
+      "type": "Microsoft.Web/sites/config",
+      "apiVersion": "2018-11-01",
+      "name": "[concat(variables('instanceName'), '/web')]",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "numberOfWorkers": 1,
+        "defaultDocuments": ["hostingstart.html"],
+        "netFrameworkVersion": "v4.0",
+        "phpVersion": "5.6",
+        "pythonVersion": "",
+        "nodeVersion": "",
+        "linuxFxVersion": "",
+        "requestTracingEnabled": true,
+        "remoteDebuggingEnabled": false,
+        "httpLoggingEnabled": true,
+        "logsDirectorySizeLimit": 35,
+        "detailedErrorLoggingEnabled": true,
+        "scmType": "VSTSRM",
+        "use32BitWorkerProcess": true,
+        "webSocketsEnabled": false,
+        "appCommandLine": "",
+        "managedPipelineMode": "Integrated",
+        "virtualApplications": [
+          {
+            "virtualPath": "/",
+            "physicalPath": "site\\wwwroot",
+            "preloadEnabled": false,
+            "virtualDirectories": null
+          }
+        ],
+        "winAuthAdminState": 0,
+        "winAuthTenantState": 0,
+        "customAppPoolIdentityAdminState": false,
+        "customAppPoolIdentityTenantState": false,
+        "loadBalancing": "LeastRequests",
+        "routingRules": [],
+        "experiments": {
+          "rampUpRules": []
+        },
+        "autoHealEnabled": false,
+        "siteAuthEnabled": false,
+        "siteAuthSettings": {
+          "enabled": null,
+          "unauthenticatedClientAction": null,
+          "tokenStoreEnabled": null,
+          "allowedExternalRedirectUrls": null,
+          "defaultProvider": null,
+          "clientId": null,
+          "clientSecret": null,
+          "clientSecretCertificateThumbprint": null,
+          "issuer": null,
+          "allowedAudiences": null,
+          "additionalLoginParams": null,
+          "isAadAutoProvisioned": false,
+          "googleClientId": null,
+          "googleClientSecret": null,
+          "googleOAuthScopes": null,
+          "facebookAppId": null,
+          "facebookAppSecret": null,
+          "facebookOAuthScopes": null,
+          "twitterConsumerKey": null,
+          "twitterConsumerSecret": null,
+          "microsoftAccountClientId": null,
+          "microsoftAccountClientSecret": null,
+          "microsoftAccountOAuthScopes": null
+        },
+        "localMySqlEnabled": false,
+        "managedServiceIdentityId": 19850,
+        "http20Enabled": false,
+        "minTlsVersion": "1.2",
+        "ftpsState": "FtpsOnly", // AllAllowed | FtpsOnly | Disabled
+        "reservedInstanceCount": 0
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Web/sites', variables('instanceName'))]"
+      ]
+    },
+    {
+      "name": "[concat(variables('instanceName'), '/logs')]",
+      "type": "Microsoft.Web/sites/config",
+      "apiVersion": "2018-11-01",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "applicationLogs": {
+          "fileSystem": {
+            "level": "Off"
+          },
+          "azureTableStorage": {
+            "level": "Off",
+            "sasUrl": null
+          },
+          "azureBlobStorage": {
+            "level": "Verbose", //Verbose, Information, Warning, Error
+            "sasUrl": "[concat(reference(concat('Microsoft.Storage/storageAccounts/', variables('storageAccountName'))).primaryEndpoints.blob, variables('applicationLogsContainerName'), '?', listAccountSas(variables('storageAccountName'), '2018-02-01', variables('listAccountSasRequestContent')).accountSasToken)]",
+            "retentionInDays": 7
+          }
+        },
+        "httpLogs": {
+          "fileSystem": {
+            "retentionInMb": 35,
+            "retentionInDays": 7,
+            "enabled": false
+          },
+          "azureBlobStorage": {
+            "enabled": true,
+            "sasUrl": "[concat(reference(concat('Microsoft.Storage/storageAccounts/', variables('storageAccountName'))).primaryEndpoints.blob, variables('webserverLogsContainerName'), '?', listAccountSas(variables('storageAccountName'), '2018-02-01', variables('listAccountSasRequestContent')).accountSasToken)]",
+            "retentionInDays": 7
+          }
+        },
+        "failedRequestsTracing": {
+          "enabled": true
+        },
+        "detailedErrorMessages": {
+          "enabled": true
+        }
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Web/sites', variables('instanceName'))]"
+      ]
+    }  
+  ],
+  "outputs": {
+    "resourceId": {
+      "type": "string",
+      "value": "[resourceId('Microsoft.Web/sites', variables('instanceName'))]"
+    }
+  }
+}

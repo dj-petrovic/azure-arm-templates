@@ -1,0 +1,74 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "appinsights_resourceName": {
+      "value": "insights-ai"
+    },
+    "appserviceplan_resourceName": {
+      "value": "windowshost-asp"
+    },
+    "service_resourceName": {
+      "value": "exchangerate-api"
+    },
+    "service_appSettings": { // Settings to enable applicaiton insights 
+      "value": [
+        {
+          "name": "APPINSIGHTS_PROFILERFEATURE_VERSION",
+          "value": "1.0.0",
+          "slotSetting": true
+        },
+        {
+          "name": "APPINSIGHTS_SNAPSHOTFEATURE_VERSION",
+          "value": "1.0.0",
+          "slotSetting": true
+        },
+        {
+          "name": "ApplicationInsightsAgent_EXTENSION_VERSION",
+          "value": "~2",
+          "slotSetting": true
+        },
+        {
+          "name": "DiagnosticServices_EXTENSION_VERSION",
+          "value": "~3",
+          "slotSetting": true
+        },
+        {
+          "name": "InstrumentationEngine_EXTENSION_VERSION",
+          "value": "disabled",
+          "slotSetting": true
+        },
+        {
+          "name": "SnapshotDebugger_EXTENSION_VERSION",
+          "value": "disabled",
+          "slotSetting": true
+        },
+        {
+          "name": "XDT_MicrosoftApplicationInsights_BaseExtensions",
+          "value": "disabled",
+          "slotSetting": true
+        },
+        {
+          "name": "XDT_MicrosoftApplicationInsights_Java",
+          "value": "1",
+          "slotSetting": false
+        },
+        {
+          "name": "XDT_MicrosoftApplicationInsights_Mode",
+          "value": "recommended",
+          "slotSetting": true
+        },
+        {
+          "name": "XDT_MicrosoftApplicationInsights_NodeJS",
+          "value": "1",
+          "slotSetting": true
+        },
+        {
+          "name": "XDT_MicrosoftApplicationInsights_PreemptSdk",
+          "value": "disabled",
+          "slotSetting": true
+        }
+      ]
+    }
+  }
+}

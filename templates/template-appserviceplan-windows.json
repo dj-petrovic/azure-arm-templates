@@ -1,0 +1,48 @@
+{
+  "$schema": "http://schema.management.azure.com/schemas/2014-04-01-preview/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "resourceName": {
+      "type": "string"
+    },
+    "sku": {
+      "type": "object",
+      "defaultValue": {
+        "name": "F1",
+        "tier": "Free",
+        "size": "F1",
+        "family": "F",
+        "capacity": 0
+      }
+    }
+  },
+  "variables": {
+    "prefix": "[replace(resourceGroup().name,'sof-','')]",
+    "resourceType": "asp",
+    "instanceName": "[concat(variables('prefix'),'-',parameters('resourceName'),'-',variables('resourceType'))]",
+    "location": "[resourceGroup().location]"
+  },
+  "resources": [
+    {
+      "type": "Microsoft.Web/serverfarms",
+      "apiVersion": "2016-09-01",
+      "name": "[variables('instanceName')]",
+      "location": "[variables('location')]",
+      "sku": "[parameters('sku')]",
+      "kind": "app",
+      "properties": {
+        "name": "[variables('instanceName')]",
+        "perSiteScaling": false,
+        "reserved": false,
+        "targetWorkerCount": 0,
+        "targetWorkerSizeId": 0
+      }
+    }
+  ],
+  "outputs": {
+    "resourceId": {
+      "type": "string",
+      "value": "[resourceId('Microsoft.Web/serverfarms', variables('instanceName'))]"
+    }
+  }
+}
