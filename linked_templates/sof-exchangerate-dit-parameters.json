@@ -9,7 +9,7 @@
       "value": "windowshost"
     },
     "service_resourceName": {
-      "value": "test"
+      "value": "exchange"
     },
     "service_appSettings": { // Settings to enable applicaiton insights 
       "value": [
