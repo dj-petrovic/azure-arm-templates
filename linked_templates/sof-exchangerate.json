@@ -15,11 +15,17 @@
     },
     "service_appSettings": {
       "type": "array",
-      "defaultValue": []
+      "defaultValue": [],
+      "metadata": {
+        "description": "Used to set additional web app configuration"
+      }
     },
-    "storageAccount": {
+    "storageAccountSuffix": {
       "type": "string",
-      "defaultValue": "[substring(newGuid(), 5)]"
+      "defaultValue": "[substring(newGuid(), 0, 5)]",
+      "metadata": {
+        "description": "Used to generate unique name for storage account resource"
+      }
     }
   },
   "variables": {
@@ -80,7 +86,10 @@
         },
         "parameters": {
           "resourceName": {
-            "value": "[concat(parameters('service_resourceName'), parameters('storageAccount'))]"
+            "value": "[parameters('service_resourceName')]"
+          },
+          "storageAccountSuffix":{
+            "value": "[parameters('storageAccountSuffix')]"
           },
           "applicationInsightsKey": {
             "value": "[reference('linked_applicaitoninsights_template').outputs.appInsightsInstrumentationKey.value]"

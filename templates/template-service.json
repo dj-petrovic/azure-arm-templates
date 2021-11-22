@@ -24,6 +24,9 @@
       "defaultValue": []
     },
     "planId": { "type": "string" },
+    "storageAccountSuffix": {
+      "type": "string"
+    },
     "enableSoftDelete": {
       "type": "bool",
       "defaultValue": false,
@@ -47,7 +50,7 @@
         "value": "[parameters('applicationInsightsKey')]"
       }     
     ],
-    "storageAccountName": "[concat(replace(variables('prefix'),'-', ''), parameters('resourceName'), 'sa')]",
+    "storageAccountName": "[concat(replace(variables('prefix'),'-', ''), parameters('resourceName'), 'sa', parameters('storageAccountSuffix'))]",
     "applicationLogsContainerName": "applicationlogs",
     "webserverLogsContainerName": "webserverlogs",
     "listAccountSasRequestContent": {
