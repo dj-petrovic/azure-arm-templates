@@ -17,9 +17,9 @@
     }
   },
   "variables": {
-    "template_applicaitoninsights_url": "",
-    "template_serviceplan_windows_url": "",
-    "template_service_url": ""
+    "template_applicaitoninsights_url": "https://raw.githubusercontent.com/dj-petrovic/azure-arm-templates/main/templates/template-applicationinsights.json",
+    "template_serviceplan_windows_url": "https://raw.githubusercontent.com/dj-petrovic/azure-arm-templates/main/templates/template-appserviceplan-windows.json",
+    "template_service_url": "https://raw.githubusercontent.com/dj-petrovic/azure-arm-templates/main/templates/template-service.json"
   },
   "resources": [
     {
@@ -77,7 +77,7 @@
             "value": "[parameters('service_resourceName')]"
           },
           "applicationInsightsKey": {
-            "value": "[reference('linked_applicaitoninsights_template').outputs.MyAppInsightsInstrumentationKey.value]"
+            "value": "[reference('linked_applicaitoninsights_template').outputs.appInsightsInstrumentationKey.value]"
           },
           "planId": {
             "value": "[reference('linked_servcieplan').outputs.resourceId.value]"
