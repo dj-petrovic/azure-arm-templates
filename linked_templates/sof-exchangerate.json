@@ -9,11 +9,17 @@
       "type": "string"
     },
     "service_resourceName": {
-      "type": "string"
+      "type": "string",
+      "minLength": 2, 
+      "maxLength": 8
     },
     "service_appSettings": {
       "type": "array",
       "defaultValue": []
+    },
+    "storageAccount": {
+      "type": "string",
+      "defaultValue": "[substring(newGuid(), 5)]"
     }
   },
   "variables": {
@@ -74,7 +80,7 @@
         },
         "parameters": {
           "resourceName": {
-            "value": "[parameters('service_resourceName')]"
+            "value": "[concat(parameters('service_resourceName'), parameters('storageAccount'))]"
           },
           "applicationInsightsKey": {
             "value": "[reference('linked_applicaitoninsights_template').outputs.appInsightsInstrumentationKey.value]"

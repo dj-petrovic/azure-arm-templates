@@ -47,7 +47,7 @@
         "value": "[parameters('applicationInsightsKey')]"
       }     
     ],
-    "storageAccountName": "[concat(replace(variables('prefix'),'-', ''), parameters('resourceName'), substring(uniqueString(parameters('resourceName')), 0, 3), 'sa')]",
+    "storageAccountName": "[concat(replace(variables('prefix'),'-', ''), parameters('resourceName'), 'sa')]",
     "applicationLogsContainerName": "applicationlogs",
     "webserverLogsContainerName": "webserverlogs",
     "listAccountSasRequestContent": {
