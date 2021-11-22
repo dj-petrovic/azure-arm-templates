@@ -3,13 +3,13 @@
   "contentVersion": "1.0.0.0",
   "parameters": {
     "appinsights_resourceName": {
-      "value": "insights-ai"
+      "value": "insights"
     },
     "appserviceplan_resourceName": {
-      "value": "windowshost-asp"
+      "value": "windowshost"
     },
     "service_resourceName": {
-      "value": "exchangerate-api"
+      "value": "test"
     },
     "service_appSettings": { // Settings to enable applicaiton insights 
       "value": [
