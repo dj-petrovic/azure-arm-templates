@@ -1,5 +1,5 @@
-templateFile="../linked/sof-exchangerate.json"
-devParameterFile="../linked/sof-exchangerate-dit-parameters.json"
+templateFile="./linked_templates/sof-exchangerate.json"
+devParameterFile="./linked_templates/sof-exchangerate-dit-parameters.json"
 resource_group="sof-case-we-dit"
 resource_group_location="westeurope"
 

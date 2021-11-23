@@ -1,3 +1,4 @@
+$ErrorActionPreference = 'Stop'
 # Deploying scale unit case and exchange rate with bundled components
 # 
 #  sof-case-we-dit
