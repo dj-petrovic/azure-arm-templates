@@ -55,9 +55,6 @@
       "type": "Microsoft.Resources/deployments",
       "apiVersion": "2016-09-01",
       "name": "linked_servcieplan",
-      "dependsOn": [
-        "[resourceId('Microsoft.Resources/deployments','linked_applicaitoninsights_template')]"
-      ],
       "properties": {
         "mode": "Incremental",
         "templateLink": {
@@ -76,6 +73,7 @@
       "apiVersion": "2016-09-01",
       "name": "linked_service",
       "dependsOn": [
+        "[resourceId('Microsoft.Resources/deployments', 'linked_applicaitoninsights_template')]",
         "[resourceId('Microsoft.Resources/deployments','linked_servcieplan')]"
       ],
       "properties": {

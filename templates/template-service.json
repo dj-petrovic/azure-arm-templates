@@ -4,6 +4,10 @@
   "parameters": {
     "resourceName": { "type": "string" },
     "applicationInsightsKey": { "type": "string" },
+    "planId": { "type": "string" },
+    "storageAccountSuffix": {
+      "type": "string"
+    },
     "environmentStage": {
       "type": "string",
       "defaultValue": "DIT",
@@ -22,10 +26,6 @@
     "connectionStrings": {
       "type": "array",
       "defaultValue": []
-    },
-    "planId": { "type": "string" },
-    "storageAccountSuffix": {
-      "type": "string"
     },
     "enableSoftDelete": {
       "type": "bool",
@@ -48,7 +48,7 @@
       {
         "name": "APPINSIGHTS_INSTRUMENTATIONKEY",
         "value": "[parameters('applicationInsightsKey')]"
-      }     
+      }
     ],
     "storageAccountName": "[concat(replace(variables('prefix'),'-', ''), parameters('resourceName'), 'sa', parameters('storageAccountSuffix'))]",
     "applicationLogsContainerName": "applicationlogs",
@@ -60,8 +60,8 @@
       "signedExpiry": "2100-01-01T00:00:00Z",
       "signedResourceTypes": "sco"
     },
-      "accessRestrictionRules": [
-    
+    "accessRestrictionRules": [
+
     ]
   },
   "resources": [
@@ -163,7 +163,7 @@
         }
       },
       "resources": [
-     
+
       ],
       "dependsOn": [
         "[resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName'))]"
@@ -176,7 +176,7 @@
       "location": "[resourceGroup().location]",
       "properties": {
         "numberOfWorkers": 1,
-        "defaultDocuments": ["hostingstart.html"],
+        "defaultDocuments": [ "hostingstart.html" ],
         "netFrameworkVersion": "v4.0",
         "phpVersion": "5.6",
         "pythonVersion": "",
@@ -289,7 +289,7 @@
       "dependsOn": [
         "[resourceId('Microsoft.Web/sites', variables('instanceName'))]"
       ]
-    }  
+    }
   ],
   "outputs": {
     "resourceId": {
